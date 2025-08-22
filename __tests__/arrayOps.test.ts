@@ -5,9 +5,10 @@ import { jest } from '@jest/globals'
 
 // Import the module being tested
 const { addNonEmptyArray } = await import('../src/arrayOps.js')
+import type { Label } from '../src/label.js'
 
 describe('arrayOps.ts', () => {
-  let attributes: Record<string, string | string[] | boolean>
+  let attributes: Record<string, string | string[] | boolean | Label[]>
 
   beforeEach(() => {
     attributes = {}
@@ -116,5 +117,49 @@ describe('arrayOps.ts', () => {
 
     expect(attributes['existing_key']).toBe('existing_value')
     expect(attributes['test_key']).toEqual(['item1', 'item2'])
+  })
+
+  // Label-specific tests
+  it('Adds non-empty Label array to attributes', () => {
+    const testLabels: Label[] = [
+      { key: 'env', value: 'prod' },
+      { key: 'team', value: 'backend' }
+    ]
+
+    addNonEmptyArray(testLabels, 'labels', attributes)
+
+    expect(attributes['labels']).toEqual([
+      { key: 'env', value: 'prod' },
+      { key: 'team', value: 'backend' }
+    ])
+  })
+
+  it('Filters out Labels with empty keys or values', () => {
+    const testLabels: Label[] = [
+      { key: 'env', value: 'prod' },
+      { key: '', value: 'backend' },
+      { key: 'team', value: '' },
+      { key: '  ', value: '  ' },
+      { key: 'valid', value: 'value' }
+    ]
+
+    addNonEmptyArray(testLabels, 'labels', attributes)
+
+    expect(attributes['labels']).toEqual([
+      { key: 'env', value: 'prod' },
+      { key: 'valid', value: 'value' }
+    ])
+  })
+
+  it('Does not add labels attribute when all Labels are empty', () => {
+    const testLabels: Label[] = [
+      { key: '', value: 'value' },
+      { key: 'key', value: '' },
+      { key: '  ', value: '  ' }
+    ]
+
+    addNonEmptyArray(testLabels, 'labels', attributes)
+
+    expect(attributes['labels']).toBeUndefined()
   })
 })

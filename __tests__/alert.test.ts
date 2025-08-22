@@ -124,7 +124,7 @@ describe('alert.ts', () => {
       expect.any(Object)
     )
     expect(mockAddNonEmptyArray).toHaveBeenCalledWith(
-      labels,
+      [{ key: 'env', value: 'prod' }],
       'labels',
       expect.any(Object)
     )
@@ -188,7 +188,7 @@ describe('alert.ts', () => {
     )
 
     expect(result).toBe('')
-    expect(core.error).toHaveBeenCalledWith(networkError)
+    expect(core.error).toHaveBeenCalledWith(networkError.message)
   })
 
   it('Logs debug information', async () => {

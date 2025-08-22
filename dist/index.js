@@ -27247,16 +27247,28 @@ function requireCore () {
 var coreExports = requireCore();
 
 /**
- * Safely adds an array to attributes if it contains non-empty strings.
+ * Safely adds an array to attributes if it contains non-empty strings or valid Label objects.
  * @param arr - The array to filter and add
  * @param attributeKey - The key to add to attributes
  * @param attributes - The attributes object to modify
  */
 function addNonEmptyArray(arr, attributeKey, attributes) {
     if (arr !== undefined && arr.length > 0) {
-        const filtered = arr.filter((str) => str.trim().length > 0);
-        if (filtered.length > 0) {
-            attributes[attributeKey] = filtered;
+        if (attributeKey === 'labels') {
+            // Handle Label[] objects - filter out labels with empty keys or values
+            const labelArray = arr;
+            const filtered = labelArray.filter((label) => label.key.trim().length > 0 && label.value.trim().length > 0);
+            if (filtered.length > 0) {
+                attributes[attributeKey] = filtered;
+            }
+        }
+        else {
+            // Handle string[] arrays
+            const stringArray = arr;
+            const filtered = stringArray.filter((str) => str.trim().length > 0);
+            if (filtered.length > 0) {
+                attributes[attributeKey] = filtered;
+            }
         }
     }
 }
@@ -27344,7 +27356,8 @@ dedupKey) {
         return data.data.id;
     }
     catch (error) {
-        coreExports.error(error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        coreExports.error(errorMessage);
         coreExports.debug(`Alert Body:\n${alertBody}`);
         return '';
     }
