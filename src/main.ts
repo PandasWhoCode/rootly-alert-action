@@ -28,6 +28,7 @@ export async function run(): Promise<void> {
     const groups = core.getInput('groups').split(',')
     const labels = createLabelsFromString(core.getInput('labels'))
     const environments = core.getInput('environments').split(',')
+    const dedupKey = core.getInput('dedup_key')
 
     // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
     core.debug(`Api Key Length: ${apiKey.length}`) // Do not log the actual API key
@@ -43,6 +44,7 @@ export async function run(): Promise<void> {
     core.debug(`Groups: ${groups}`)
     core.debug(`Labels: ${labels}`)
     core.debug(`Environments: ${environments}`)
+    core.debug(`Deduplication Key: ${dedupKey}`)
 
     // Set up service IDs
     const serviceIds: string[] = []
