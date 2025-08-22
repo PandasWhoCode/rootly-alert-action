@@ -1,23 +1,72 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: Rootly Alert Action
+description: Create an alert using the Rootly REST API.
+author: PandasWhoCode
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: bell
+  color: 'blue'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  api_key:
+    description: The API key to use for authentication.
     required: true
-    default: '1000'
+  summary:
+    description: The summary of the alert.
+    required: true
+  details:
+    description: The details of the alert.
+    required: true
+  set_as_noise:
+    description:
+      A boolean to determine if the alert is noise (default is false).
+    required: false
+    default: 'false'
+  notification_target_type:
+    description:
+      The type of notification target for the alert (User, Service,
+      EscalationPolicy, or Group).
+    required: true
+  notification_target:
+    description:
+      The name of the service, escalation policy, group, or user email for the
+      alert to target.
+    required: true
+  alert_urgency:
+    description: The urgency of the alert (default is 'High').
+    required: false
+    default: 'High'
+  external_id:
+    description: An external ID for the alert.
+    required: false
+  external_url:
+    description: An external URL for the alert.
+    required: false
+  services:
+    description:
+      A comma-separated list of service names to create the alert for.
+    required: false
+  alert_groups:
+    description:
+      A comma-separated list of alert_group names to create the alert for.
+    required: false
+  labels:
+    description:
+      A comma-separated list of key:value pairs to create the alert for.
+    required: false
+  environments:
+    description:
+      A comma-separated list of environment names to create the alert for.
+    required: false
+  deduplication_key:
+    description: A deduplication key for the alert.
+    required: false
 
 # Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
+  alert_id:
+    description: The ID of the created alert for API usage.
 
 runs:
   using: node24

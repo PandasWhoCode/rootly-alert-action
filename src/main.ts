@@ -1,5 +1,11 @@
 import * as core from '@actions/core'
-import { wait } from './wait.js'
+import { createAlert } from './alert.js'
+import { getAlertUrgencyId } from './alertUrgency.js'
+import { getServiceId } from './service.js'
+import { getGroupId } from './group.js'
+import { getEnvironmentId } from './environment.js'
+import { createLabelsFromString } from './label.js'
+import { createNotificationTarget } from './notificationTarget.js'
 
 /**
  * The main function for the action.
@@ -8,18 +14,101 @@ import { wait } from './wait.js'
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    // Get the action's inputs
+    const apiKey = core.getInput('api_key') // apiKey is required, never logged.
+    const summary = core.getInput('summary')
+    const details = core.getInput('details')
+    const setAsNoise = core.getInput('set_as_noise') === 'true'
+    const notificationTargetType = core.getInput('notification_target_type')
+    const notificationTargetVal = core.getInput('notification_target')
+    const alertUrgency = core.getInput('alert_urgency')
+    const externalId = core.getInput('external_id')
+    const externalUrl = core.getInput('external_url')
+    const services = core.getInput('services').split(',')
+    const groups = core.getInput('groups').split(',')
+    const labels = createLabelsFromString(core.getInput('labels'))
+    const environments = core.getInput('environments').split(',')
 
     // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    core.debug(`Api Key Length: ${apiKey.length}`) // Do not log the actual API key
+    core.debug(`Summary: ${summary}`)
+    core.debug(`Details: ${details}`)
+    core.debug(`Set as noise: ${setAsNoise}`)
+    core.debug(`Notification target type: ${notificationTargetType}`)
+    core.debug(`Notification target: ${notificationTargetVal}`)
+    core.debug(`Alert urgency: ${alertUrgency}`)
+    core.debug(`External ID: ${externalId}`)
+    core.debug(`External URL: ${externalUrl}`)
+    core.debug(`Services: ${services}`)
+    core.debug(`Groups: ${groups}`)
+    core.debug(`Labels: ${labels}`)
+    core.debug(`Environments: ${environments}`)
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    // Set up service IDs
+    const serviceIds: string[] = []
+    for (const service of services) {
+      if (service !== '') {
+        const serviceId = await getServiceId(service, apiKey)
+        serviceIds.push(serviceId)
+      }
+    }
+
+    // Grab the alert urgency ID
+    let alertUrgencyId: string = ''
+    if (alertUrgency !== '') {
+      alertUrgencyId = await getAlertUrgencyId(alertUrgency, apiKey)
+    } else {
+      // Default to 'high' if not provided
+      alertUrgencyId = await getAlertUrgencyId('High', apiKey)
+    }
+
+    // Set up group IDs (used for alert groups)
+    // check if groups are provided, if not, use an empty array
+    const alertGroupIds: string[] = []
+    for (const group of groups) {
+      if (group !== '') {
+        const groupId = await getGroupId(group, apiKey)
+        alertGroupIds.push(groupId)
+      }
+    }
+
+    // Set up environment IDs
+    const environmentIds: string[] = []
+    for (const environment of environments) {
+      if (environment !== '') {
+        const environmentId = await getEnvironmentId(environment, apiKey)
+        environmentIds.push(environmentId)
+      }
+    }
+
+    // Create notificationTarget
+    const notificationTarget = await createNotificationTarget(
+      notificationTargetType,
+      notificationTargetVal
+    )
+
+    // Create the alert
+    const alertId = await createAlert(
+      apiKey,
+      summary,
+      description,
+      setAsNoise,
+      notificationTarget,
+      alertUrgencyId,
+      externalId,
+      externalUrl,
+      serviceIds,
+      alertGroupIds,
+      labels,
+      environmentIds,
+      dedupKey
+    )
+
+    // Debug log the created alert ID
+    core.debug(`Created Alert ID: ${alertId}`)
 
     // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    core.setOutput('alert-id', alertId)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
