@@ -20,19 +20,20 @@ export type NotificationTarget = {
  */
 export async function createNotificationTarget(
   type: string,
-  targetName: string
+  targetName: string,
+  apiKey: string
 ): Promise<NotificationTarget> {
-  if (type.lowerCase() === 'user') {
-    return { id: await getUserId(targetName), type: 'User' }
-  } else if (type.lowerCase() === 'service') {
-    return { id: await getServiceId(targetName), type: 'Service' }
-  } else if (type.lowerCase() === 'escalationpolicy') {
+  if (type.toLowerCase() === 'user') {
+    return { id: await getUserId(targetName, apiKey), type: 'User' }
+  } else if (type.toLowerCase() === 'service') {
+    return { id: await getServiceId(targetName, apiKey), type: 'Service' }
+  } else if (type.toLowerCase() === 'escalationpolicy') {
     return {
-      id: await getEscalationPolicyId(targetName),
+      id: await getEscalationPolicyId(targetName, apiKey),
       type: 'EscalationPolicy'
     }
-  } else if (type.lowerCase() === 'group') {
-    return { id: await getGroupId(targetName), type: 'Group' }
+  } else if (type.toLowerCase() === 'group') {
+    return { id: await getGroupId(targetName, apiKey), type: 'Group' }
   } else {
     throw new Error('Invalid notification target type')
   }

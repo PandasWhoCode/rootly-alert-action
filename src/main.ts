@@ -28,7 +28,7 @@ export async function run(): Promise<void> {
     const groups = core.getInput('groups').split(',')
     const labels = createLabelsFromString(core.getInput('labels'))
     const environments = core.getInput('environments').split(',')
-    const dedupKey = core.getInput('dedup_key')
+    const dedupKey = core.getInput('deduplication_key')
 
     // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
     core.debug(`Api Key Length: ${apiKey.length}`) // Do not log the actual API key
@@ -86,14 +86,15 @@ export async function run(): Promise<void> {
     // Create notificationTarget
     const notificationTarget = await createNotificationTarget(
       notificationTargetType,
-      notificationTargetVal
+      notificationTargetVal,
+      apiKey
     )
 
     // Create the alert
     const alertId = await createAlert(
       apiKey,
       summary,
-      description,
+      details,
       setAsNoise,
       notificationTarget,
       alertUrgencyId,
