@@ -160,7 +160,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Deploy Application
         id: deploy
@@ -202,7 +202,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Run Tests
         id: test
@@ -269,9 +269,9 @@ jobs:
 
 1. In your GitHub repository, go to **Settings** → **Secrets and variables** →
    **Actions**
-2. Click **New repository secret**
-3. Name: `ROOTLY_API_KEY`
-4. Value: Your Rootly API key from your Rootly dashboard
+1. Click **New repository secret**
+1. Name: `ROOTLY_API_KEY`
+1. Value: Your Rootly API key from your Rootly dashboard
 
 ### Notification Target Types
 
@@ -331,27 +331,27 @@ Use appropriate notification targets:
 
 ### Common Issues
 
-**Invalid API Key**
+#### Invalid API Key
 
-```
+```text
 Error: Authentication failed
 ```
 
 - Verify your API key is correct
 - Ensure the secret is properly set in GitHub
 
-**Target Not Found**
+#### Target Not Found
 
-```
+```text
 Error: Notification target not found
 ```
 
 - Check the target name matches exactly in Rootly
 - Verify the target type is correct
 
-**Service Not Found**
+#### Service Not Found
 
-```
+```text
 Error: Service 'service-name' not found
 ```
 
@@ -366,11 +366,11 @@ your repository settings.
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run `npm run all` to test, lint, and build
-6. Submit a pull request
+1. Create a feature branch
+1. Make your changes
+1. Add tests for new functionality
+1. Run `npm run all` to test, lint, and build
+1. Submit a pull request
 
 ## License
 
