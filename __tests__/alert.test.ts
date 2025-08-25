@@ -289,4 +289,24 @@ describe('alert.ts', () => {
 
     expect(requestBody.data.attributes.deduplication_key).toBeUndefined()
   })
+
+  it('Handles non-Error exceptions', async () => {
+    // Mock fetch to throw a non-Error object (like a string)
+    mockFetch.mockRejectedValue('String error message')
+
+    const result = await createAlert(
+      mockApiKey,
+      mockSummary,
+      mockDescription,
+      false,
+      mockNotificationTarget,
+      mockAlertUrgencyId
+    )
+
+    expect(result).toBe('')
+    expect(core.error).toHaveBeenCalledWith('String error message')
+    expect(core.debug).toHaveBeenCalledWith(
+      expect.stringContaining('Alert Body:')
+    )
+  })
 })
