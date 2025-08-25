@@ -43,7 +43,7 @@ export async function createAlert(
     source: 'api',
     summary: summary,
     description: description,
-    noise: setAsNoise,
+    noise: setAsNoise ? 'noise' : 'not_noise',
     status: 'triggered',
     notification_target_type: notificationTarget.type,
     notification_target_id: notificationTarget.id,
@@ -74,9 +74,6 @@ export async function createAlert(
       attributes
     }
   })
-
-  // For now print the alert body as debug
-  core.debug(`Alert Body:\n${alertBody}`)
 
   const options = {
     method: 'POST',

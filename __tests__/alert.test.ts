@@ -82,7 +82,29 @@ describe('alert.ts', () => {
     const callArgs = mockFetch.mock.calls[0]
     const requestBody = JSON.parse(callArgs[1].body)
 
-    expect(requestBody.data.attributes.noise).toBe(true)
+    expect(requestBody.data.attributes.noise).toBe('noise')
+  })
+
+  it('Logs debug information when an error occurs', async () => {
+    const networkError = new Error('Network error')
+    mockFetch.mockRejectedValue(networkError)
+
+    await createAlert(
+      mockApiKey,
+      mockSummary,
+      mockDescription,
+      false,
+      mockNotificationTarget,
+      mockAlertUrgencyId
+    )
+
+    // Verify core.debug is called twice - once before try block and once in catch block
+    expect(core.debug).toHaveBeenCalledTimes(1)
+    expect(core.debug).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining('Alert Body:')
+    )
+    expect(core.error).toHaveBeenCalledWith(networkError.message)
   })
 
   it('Includes optional parameters when provided', async () => {
@@ -189,21 +211,6 @@ describe('alert.ts', () => {
 
     expect(result).toBe('')
     expect(core.error).toHaveBeenCalledWith(networkError.message)
-  })
-
-  it('Logs debug information', async () => {
-    await createAlert(
-      mockApiKey,
-      mockSummary,
-      mockDescription,
-      false,
-      mockNotificationTarget,
-      mockAlertUrgencyId
-    )
-
-    expect(core.debug).toHaveBeenCalledWith(
-      expect.stringContaining('Alert Body:')
-    )
   })
 
   it('Sets correct request attributes', async () => {
