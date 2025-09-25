@@ -5,7 +5,11 @@ import { getServiceId } from './service.js'
 import { getGroupId } from './group.js'
 import { getEnvironmentId } from './environment.js'
 import { createLabelsFromString } from './label.js'
-import { createNotificationTarget } from './notificationTarget.js'
+import {
+  createEmptyNotificationTarget,
+  NotificationTarget,
+  setNotificationTarget
+} from './notificationTarget.js'
 
 /**
  * The main function for the action.
@@ -84,11 +88,16 @@ export async function run(): Promise<void> {
     }
 
     // Create notificationTarget
-    const notificationTarget = await createNotificationTarget(
-      notificationTargetType,
-      notificationTargetVal,
-      apiKey
-    )
+    const notificationTarget: NotificationTarget =
+      createEmptyNotificationTarget()
+    if (notificationTargetType !== '' && notificationTargetVal !== '') {
+      setNotificationTarget(
+        notificationTarget,
+        notificationTargetType,
+        notificationTargetVal,
+        apiKey
+      )
+    }
 
     // Create the alert
     const alertId = await createAlert(

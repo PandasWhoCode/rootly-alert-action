@@ -1,5 +1,6 @@
 import { ApiPostResponse } from './apiResponse.js'
 import { addNonEmptyArray } from './arrayOps.js'
+import { isEmptyNotificationTarget } from './notificationTarget.js'
 import * as core from '@actions/core'
 import type { Label } from './label.js'
 import type { NotificationTarget } from './notificationTarget.js'
@@ -45,9 +46,13 @@ export async function createAlert(
     description: description,
     noise: setAsNoise ? 'noise' : 'not_noise',
     status: 'triggered',
-    notification_target_type: notificationTarget.type,
-    notification_target_id: notificationTarget.id,
     alert_urgency_id: alertUrgency
+  }
+
+  // Add notification target if provided and not empty
+  if (!isEmptyNotificationTarget(notificationTarget)) {
+    attributes['notification_target_type'] = notificationTarget.type
+    attributes['notification_target_id'] = notificationTarget.id
   }
 
   // Only add externalId and externalUrl if they are provided and not empty

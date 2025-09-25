@@ -27,12 +27,12 @@ inputs:
     description:
       The type of notification target for the alert (User, Service,
       EscalationPolicy, or Group).
-    required: true
+    required: false
   notification_target:
     description:
       The name of the service, escalation policy, group, or user email for the
       alert to target.
-    required: true
+    required: false
   alert_urgency:
     description: The urgency of the alert (default is 'High').
     required: false
