@@ -12,6 +12,8 @@ const mockGetGroupId = jest.fn()
 const mockGetEnvironmentId = jest.fn()
 const mockCreateLabelsFromString = jest.fn()
 const mockCreateNotificationTarget = jest.fn()
+const mockCreateEmptyNotificationTarget = jest.fn()
+const mockSetNotificationTarget = jest.fn()
 
 // Mocks should be declared before the module being tested is imported.
 jest.unstable_mockModule('@actions/core', () => core)
@@ -34,7 +36,9 @@ jest.unstable_mockModule('../src/label.js', () => ({
   createLabelsFromString: mockCreateLabelsFromString
 }))
 jest.unstable_mockModule('../src/notificationTarget.js', () => ({
-  createNotificationTarget: mockCreateNotificationTarget
+  createNotificationTarget: mockCreateNotificationTarget,
+  createEmptyNotificationTarget: mockCreateEmptyNotificationTarget,
+  setNotificationTarget: mockSetNotificationTarget
 }))
 
 // The module being tested should be imported dynamically
@@ -79,6 +83,14 @@ describe('main.ts', () => {
       id: 'user-303',
       type: 'User'
     })
+    mockCreateEmptyNotificationTarget.mockReturnValue({
+      id: '',
+      type: ''
+    })
+    mockSetNotificationTarget.mockImplementation((target) => {
+      target.id = 'user-303'
+      target.type = 'User'
+    })
   })
 
   afterEach(() => {
@@ -100,7 +112,12 @@ describe('main.ts', () => {
     expect(mockCreateLabelsFromString).toHaveBeenCalledWith(
       'env:prod,team:backend'
     )
-    expect(mockCreateNotificationTarget).toHaveBeenCalledWith(
+    expect(mockCreateEmptyNotificationTarget).toHaveBeenCalled()
+    expect(mockSetNotificationTarget).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: expect.any(String),
+        type: expect.any(String)
+      }),
       'User',
       'test-user',
       'test-api-key'
@@ -265,5 +282,31 @@ describe('main.ts', () => {
 
     // When error is not an Error instance, setFailed should not be called
     expect(core.setFailed).not.toHaveBeenCalled()
+  })
+
+  it('Handles empty notification target type', async () => {
+    core.getInput.mockImplementation((name: string) => {
+      if (name === 'notification_target_type') return ''
+      if (name === 'notification_target') return 'test-user'
+      return name === 'api_key' ? 'test-api-key' : 'test-value'
+    })
+
+    await run()
+
+    expect(mockCreateEmptyNotificationTarget).toHaveBeenCalled()
+    expect(mockSetNotificationTarget).not.toHaveBeenCalled()
+  })
+
+  it('Handles empty notification target value', async () => {
+    core.getInput.mockImplementation((name: string) => {
+      if (name === 'notification_target_type') return 'User'
+      if (name === 'notification_target') return ''
+      return name === 'api_key' ? 'test-api-key' : 'test-value'
+    })
+
+    await run()
+
+    expect(mockCreateEmptyNotificationTarget).toHaveBeenCalled()
+    expect(mockSetNotificationTarget).not.toHaveBeenCalled()
   })
 })

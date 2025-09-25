@@ -309,4 +309,29 @@ describe('alert.ts', () => {
       expect.stringContaining('Alert Body:')
     )
   })
+
+  it('Excludes notification target when empty', async () => {
+    const emptyNotificationTarget = { id: '', type: '' }
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { id: 'alert-123' } })
+    })
+
+    await createAlert(
+      mockApiKey,
+      mockSummary,
+      mockDescription,
+      false,
+      emptyNotificationTarget,
+      mockAlertUrgencyId
+    )
+
+    const requestBody = JSON.parse(mockFetch.mock.calls[0][1].body)
+    expect(requestBody.data.attributes).not.toHaveProperty(
+      'notification_target_type'
+    )
+    expect(requestBody.data.attributes).not.toHaveProperty(
+      'notification_target_id'
+    )
+  })
 })

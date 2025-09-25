@@ -27274,6 +27274,174 @@ function addNonEmptyArray(arr, attributeKey, attributes) {
 }
 
 /**
+ * Get the service ID using the Rootly REST API.
+ *
+ * @param {string} service - The name of the service.
+ * @param {string} apiKey - The API key to use for authentication.
+ * @returns {string} The ID of the service.
+ */
+async function getServiceId(service, apiKey) {
+    const apiServiceName = encodeURIComponent(service);
+    const url = 'https://api.rootly.com/v1/services?filter%5Bname%5D=' + apiServiceName;
+    const options = {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${apiKey}` }
+    };
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
+        }
+        const data = (await response.json());
+        if (!data.data || data.data.length === 0) {
+            coreExports.warning(`Service '${service}' not found`);
+            return '';
+        }
+        return data.data[0].id;
+    }
+    catch (error) {
+        console.error(error);
+        return '';
+    }
+}
+
+/**
+ * Get the group ID using the Rootly REST API.
+ *
+ * @param {string} group - The name of the group.
+ * @param {string} apiKey - The API key to use for authentication.
+ * @returns {string} The ID of the group.
+ */
+async function getGroupId(group, apiKey) {
+    const apiGroupName = encodeURIComponent(group);
+    const url = 'https://api.rootly.com/v1/alert_groups?include=' + apiGroupName;
+    const options = {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${apiKey}` }
+    };
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
+        }
+        const data = (await response.json());
+        return data.data[0].id;
+    }
+    catch (error) {
+        console.error(error);
+        return '';
+    }
+}
+
+/**
+ * Get the Escalation Policy ID using the Rootly REST API.
+ *
+ * @param {string} policy - The name of the escalation policy.
+ * @param {string} apiKey - The API key to use for authentication.
+ * @returns {string} The ID of the policy.
+ */
+async function getEscalationPolicyId(policy, apiKey) {
+    const apiPolicyName = encodeURIComponent(policy);
+    const url = 'https://api.rootly.com/v1/escalation_policies?filter%5Bname%5D=' +
+        apiPolicyName;
+    const options = {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${apiKey}` }
+    };
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
+        }
+        const data = (await response.json());
+        if (!data.data || data.data.length === 0) {
+            coreExports.warning(`Escalation policy '${policy}' not found`);
+            return '';
+        }
+        return data.data[0].id;
+    }
+    catch (error) {
+        console.error(error);
+        return '';
+    }
+}
+
+/**
+ * Get the Usery ID using the Rootly REST API.
+ *
+ * @param {string} email - The name of the escalation policy.
+ * @param {string} apiKey - The API key to use for authentication.
+ * @returns {string} The ID of the user.
+ */
+async function getUserId(email, apiKey) {
+    const apiUserEmail = encodeURIComponent(email);
+    const url = 'https://api.rootly.com/v1/users?filter%5Bemail%5D=' + apiUserEmail;
+    const options = {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${apiKey}` }
+    };
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
+        }
+        const data = (await response.json());
+        if (!data.data || data.data.length === 0) {
+            coreExports.warning(`User '${email}' not found`);
+            return '';
+        }
+        return data.data[0].id;
+    }
+    catch (error) {
+        console.error(error);
+        return '';
+    }
+}
+
+/**
+ * Create an empty notification target.
+ * @returns {NotificationTarget} An empty notification target.
+ */
+function createEmptyNotificationTarget() {
+    return { id: '', type: '' };
+}
+/**
+ * Check if a notification target is empty.
+ * @param target
+ */
+function isEmptyNotificationTarget(target) {
+    return target.id === '' && target.type === '';
+}
+/**
+ * Update an existing notification target object with ID and type.
+ * @param target - The notification target to update.
+ * @param type - The type of notification target.
+ * @param targetName - The name of the notification target.
+ * @param apiKey - The API key to use for authentication.
+ */
+async function setNotificationTarget(target, type, targetName, apiKey) {
+    if (type.toLowerCase() === 'user') {
+        target.id = await getUserId(targetName, apiKey);
+        target.type = 'User';
+    }
+    else if (type.toLowerCase() === 'service') {
+        target.id = await getServiceId(targetName, apiKey);
+        target.type = 'Service';
+    }
+    else if (type.toLowerCase() === 'escalationpolicy') {
+        target.id = await getEscalationPolicyId(targetName, apiKey);
+        target.type = 'EscalationPolicy';
+    }
+    else if (type.toLowerCase() === 'group') {
+        target.id = await getGroupId(targetName, apiKey);
+        target.type = 'Group';
+    }
+    else {
+        throw new Error('Invalid notification target type');
+    }
+}
+
+/**
  * Create an alert using the Rootly REST API.
  *
  * @param {string} apiKey - The API key to use for authentication.
@@ -27312,10 +27480,13 @@ dedupKey) {
         description: description,
         noise: setAsNoise ? 'noise' : 'not_noise',
         status: 'triggered',
-        notification_target_type: notificationTarget.type,
-        notification_target_id: notificationTarget.id,
         alert_urgency_id: alertUrgency
     };
+    // Add notification target if provided and not empty
+    if (!isEmptyNotificationTarget(notificationTarget)) {
+        attributes['notification_target_type'] = notificationTarget.type;
+        attributes['notification_target_id'] = notificationTarget.id;
+    }
     // Only add externalId and externalUrl if they are provided and not empty
     if (externalId && externalId !== '') {
         attributes['external_id'] = externalId;
@@ -27391,66 +27562,6 @@ async function getAlertUrgencyId(alertUrgency, apiKey) {
 }
 
 /**
- * Get the service ID using the Rootly REST API.
- *
- * @param {string} service - The name of the service.
- * @param {string} apiKey - The API key to use for authentication.
- * @returns {string} The ID of the service.
- */
-async function getServiceId(service, apiKey) {
-    const apiServiceName = encodeURIComponent(service);
-    const url = 'https://api.rootly.com/v1/services?filter%5Bname%5D=' + apiServiceName;
-    const options = {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${apiKey}` }
-    };
-    try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
-        }
-        const data = (await response.json());
-        if (!data.data || data.data.length === 0) {
-            coreExports.warning(`Service '${service}' not found`);
-            return '';
-        }
-        return data.data[0].id;
-    }
-    catch (error) {
-        console.error(error);
-        return '';
-    }
-}
-
-/**
- * Get the group ID using the Rootly REST API.
- *
- * @param {string} group - The name of the group.
- * @param {string} apiKey - The API key to use for authentication.
- * @returns {string} The ID of the group.
- */
-async function getGroupId(group, apiKey) {
-    const apiGroupName = encodeURIComponent(group);
-    const url = 'https://api.rootly.com/v1/alert_groups?include=' + apiGroupName;
-    const options = {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${apiKey}` }
-    };
-    try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
-        }
-        const data = (await response.json());
-        return data.data[0].id;
-    }
-    catch (error) {
-        console.error(error);
-        return '';
-    }
-}
-
-/**
  * Retrieve the environment ID using the Rootly REST API.
  *
  * @param {string} environment - The name of the environment.
@@ -27495,99 +27606,6 @@ function createLabelsFromString(labelString) {
         });
     }
     return labels;
-}
-
-/**
- * Get the Escalation Policy ID using the Rootly REST API.
- *
- * @param {string} policy - The name of the escalation policy.
- * @param {string} apiKey - The API key to use for authentication.
- * @returns {string} The ID of the policy.
- */
-async function getEscalationPolicyId(policy, apiKey) {
-    const apiPolicyName = encodeURIComponent(policy);
-    const url = 'https://api.rootly.com/v1/escalation_policies?filter%5Bname%5D=' +
-        apiPolicyName;
-    const options = {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${apiKey}` }
-    };
-    try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
-        }
-        const data = (await response.json());
-        if (!data.data || data.data.length === 0) {
-            coreExports.warning(`Escalation policy '${policy}' not found`);
-            return '';
-        }
-        return data.data[0].id;
-    }
-    catch (error) {
-        console.error(error);
-        return '';
-    }
-}
-
-/**
- * Get the Usery ID using the Rootly REST API.
- *
- * @param {string} email - The name of the escalation policy.
- * @param {string} apiKey - The API key to use for authentication.
- * @returns {string} The ID of the user.
- */
-async function getUserId(email, apiKey) {
-    const apiUserEmail = encodeURIComponent(email);
-    const url = 'https://api.rootly.com/v1/users?filter%5Bemail%5D=' + apiUserEmail;
-    const options = {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${apiKey}` }
-    };
-    try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
-        }
-        const data = (await response.json());
-        if (!data.data || data.data.length === 0) {
-            coreExports.warning(`User '${email}' not found`);
-            return '';
-        }
-        return data.data[0].id;
-    }
-    catch (error) {
-        console.error(error);
-        return '';
-    }
-}
-
-/**
- * Create a notification target using the Rootly REST API.
- *
- * @param {'User' | 'Service' | 'EscalationPolicy' | 'Group'} type - The type of notification target to create.
- * @param {string} targetName - The name of the notification target to create.
- * @returns {NotificationTarget} The created notification target.
- */
-async function createNotificationTarget(type, targetName, apiKey) {
-    if (type.toLowerCase() === 'user') {
-        return { id: await getUserId(targetName, apiKey), type: 'User' };
-    }
-    else if (type.toLowerCase() === 'service') {
-        return { id: await getServiceId(targetName, apiKey), type: 'Service' };
-    }
-    else if (type.toLowerCase() === 'escalationpolicy') {
-        return {
-            id: await getEscalationPolicyId(targetName, apiKey),
-            type: 'EscalationPolicy'
-        };
-    }
-    else if (type.toLowerCase() === 'group') {
-        return { id: await getGroupId(targetName, apiKey), type: 'Group' };
-    }
-    else {
-        throw new Error('Invalid notification target type');
-    }
 }
 
 /**
@@ -27662,7 +27680,10 @@ async function run() {
             }
         }
         // Create notificationTarget
-        const notificationTarget = await createNotificationTarget(notificationTargetType, notificationTargetVal, apiKey);
+        const notificationTarget = createEmptyNotificationTarget();
+        if (notificationTargetType !== '' && notificationTargetVal !== '') {
+            setNotificationTarget(notificationTarget, notificationTargetType, notificationTargetVal, apiKey);
+        }
         // Create the alert
         const alertId = await createAlert(apiKey, summary, details, setAsNoise, notificationTarget, alertUrgencyId, externalId, externalUrl, serviceIds, alertGroupIds, labels, environmentIds, dedupKey);
         // Debug log the created alert ID
