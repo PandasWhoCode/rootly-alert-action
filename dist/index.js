@@ -27522,6 +27522,7 @@ dedupKey) {
             throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
         }
         const data = (await response.json());
+        coreExports.debug(`Alert Body:\n${alertBody}`);
         return data.data.id;
     }
     catch (error) {
@@ -27682,8 +27683,9 @@ async function run() {
         // Create notificationTarget
         const notificationTarget = createEmptyNotificationTarget();
         if (notificationTargetType !== '' && notificationTargetVal !== '') {
-            setNotificationTarget(notificationTarget, notificationTargetType, notificationTargetVal, apiKey);
+            await setNotificationTarget(notificationTarget, notificationTargetType, notificationTargetVal, apiKey);
         }
+        coreExports.debug(`Notification target: {type: ${notificationTarget.type} , id: ${notificationTarget.id} }`);
         // Create the alert
         const alertId = await createAlert(apiKey, summary, details, setAsNoise, notificationTarget, alertUrgencyId, externalId, externalUrl, serviceIds, alertGroupIds, labels, environmentIds, dedupKey);
         // Debug log the created alert ID

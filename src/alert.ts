@@ -99,6 +99,7 @@ export async function createAlert(
     }
 
     const data = (await response.json()) as ApiPostResponse
+    core.debug(`Alert Body:\n${alertBody}`)
     return data.data.id
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)

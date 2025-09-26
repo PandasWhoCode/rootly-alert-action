@@ -91,13 +91,16 @@ export async function run(): Promise<void> {
     const notificationTarget: NotificationTarget =
       createEmptyNotificationTarget()
     if (notificationTargetType !== '' && notificationTargetVal !== '') {
-      setNotificationTarget(
+      await setNotificationTarget(
         notificationTarget,
         notificationTargetType,
         notificationTargetVal,
         apiKey
       )
     }
+    core.debug(
+      `Notification target: {type: ${notificationTarget.type} , id: ${notificationTarget.id} }`
+    )
 
     // Create the alert
     const alertId = await createAlert(
