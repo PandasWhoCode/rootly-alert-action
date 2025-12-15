@@ -1,4 +1,4 @@
-import { ApiPostResponse } from './apiResponse.js'
+import type { ApiPostResponse } from './apiResponse.js'
 import { addNonEmptyArray } from './arrayOps.js'
 import * as core from '@actions/core'
 import type { Label } from './label.js'

@@ -1,4 +1,4 @@
-import { Label } from './label'
+import type { Label } from './label'
 
 /**
  * Safely adds an array to attributes if it contains non-empty strings or valid Label objects.

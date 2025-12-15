@@ -1,4 +1,4 @@
-import { ApiResponse } from './apiResponse.js'
+import type { ApiResponse } from './apiResponse.js'
 import * as core from '@actions/core'
 
 /**

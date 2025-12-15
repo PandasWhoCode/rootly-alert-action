@@ -1,4 +1,4 @@
-import { ApiResponse } from './apiResponse.js'
+import type { ApiResponse } from './apiResponse.js'
 
 /**
  * Get the group ID using the Rootly REST API.
