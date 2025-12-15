@@ -10,7 +10,7 @@ updates:
           - minor
           - patch
     cooldown:
-      default-days: 2
+      default-days: 7
     open-pull-requests-limit: 5
 
   - package-ecosystem: npm
@@ -28,5 +28,5 @@ updates:
         update-types:
           - patch
     cooldown:
-      default-days: 2
+      default-days: 7
     open-pull-requests-limit: 5
