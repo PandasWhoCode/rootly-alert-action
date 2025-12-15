@@ -4,11 +4,11 @@
  */
 
 export interface ApiResponse {
-	data: {
-		id: string;
-	}[];
+  data: {
+    id: string
+  }[]
 }
 
 export interface ApiPostResponse {
-	data: { id: string };
+  data: { id: string }
 }
