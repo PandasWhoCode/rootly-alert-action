@@ -27,6 +27,6 @@ updates:
         dependency-type: production
         update-types:
           - patch
-      cooldown:
-        default-days: 2
-      open-pull-requests-limit: 5
+    cooldown:
+      default-days: 2
+    open-pull-requests-limit: 5
