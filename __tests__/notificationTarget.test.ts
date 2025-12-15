@@ -24,8 +24,9 @@ jest.unstable_mockModule('../src/user.js', () => ({
 }))
 
 // Import the module being tested
-const { createNotificationTarget } =
-  await import('../src/notificationTarget.js')
+const { createNotificationTarget } = await import(
+  '../src/notificationTarget.js'
+)
 
 describe('notificationTarget.ts', () => {
   const mockTargetName = 'test-target'
