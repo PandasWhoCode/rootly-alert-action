@@ -70,4 +70,4 @@ outputs:
 
 runs:
   using: node24
-  main: dist/index.js
+  main: ${{ github.action_path }}/dist/index.js
