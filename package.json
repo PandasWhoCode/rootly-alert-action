@@ -37,12 +37,12 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^3.0.1"
+    "@actions/core": "3.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.7",
     "@eslint/js": "10.0.1",
-    "@github/local-action": "^7.0.1",
+    "@github/local-action": "7.0.1",
     "@jest/globals": "30.5.2",
     "@rollup/plugin-commonjs": "29.0.3",
     "@rollup/plugin-node-resolve": "16.0.3",
@@ -66,6 +66,15 @@
     "typescript": "5.9.3"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "*"
+    "@rollup/rollup-linux-x64-gnu": "4.65.0"
+  },
+  "overrides": {
+    "@actions/core@3.0.1": {
+      "@actions/exec": "3.0.0",
+      "@actions/http-client": "4.0.1",
+      "@actions/io": "3.0.2",
+      "tunnel": "0.0.6",
+      "undici": "6.29.1"
+    }
   }
 }
